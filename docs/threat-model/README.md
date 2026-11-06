@@ -23,7 +23,9 @@ tóm tắt cho report: [`../report/D2_section5_threat_model.md`](../report/D2_se
 - Planner: Gemini `gemini-2.5-flash` qua HTTPS (B2-ext) hoặc Ollama local (B2-local). Không fallback
   giữa hai bên (Q1, Q2 trong workplan §15.8).
 - **Câu trả lời cuối không do LLM viết:** controller định dạng dòng kết quả bằng `_format_result`
-  (`src/sqlguard/agent/controller.py`). Dòng kết quả hiện **không quay lại model nào** (xem T6, T20).
+  (`src/sqlguard/agent/controller.py`). Trên đường web/controller, dòng kết quả **không quay lại model
+  nào** (xem T6, T20). Ngoại lệ: MCP server `sqlguard.mcp.server` trả dòng kết quả cho **LLM của client
+  MCP** bên ngoài SQLGuard (T22).
 - Ngoài phạm vi D2: attacker có quyền OS hoặc đọc trực tiếp file DB, supply chain, network attacker
   (code bắt buộc `https://` cho provider), tải đồng thời cao.
 
@@ -45,7 +47,7 @@ tóm tắt cho report: [`../report/D2_section5_threat_model.md`](../report/D2_se
 | --- | --- | --- |
 | U1 | Người dùng vô ý | Hỏi trúng cột hoặc bảng cấm |
 | U2 | Người dùng đã đăng nhập có ý đồ | Direct injection trong câu hỏi, nhận mình là role khác, sửa `role` trong request, SQL thủ công độc hại |
-| U3 | Indirect injector | Ghi text vào `account.service_note` / `order.note` (Attack Lab hoặc nhân viên nhập liệu). Text được đọc ra như dữ liệu; **hiện chưa có model nào đọc dòng kết quả** |
+| U3 | Indirect injector | Ghi text vào `account.service_note` / `order.note` (Attack Lab hoặc nhân viên nhập liệu). Text được đọc ra như dữ liệu; trên đường web **chưa có model nào đọc dòng kết quả**; qua MCP thì LLM của client đọc (T22) |
 | U4 | Model không đáng tin | LLM làm theo injection hoặc hallucinate: sinh SQL nguy hiểm, đổi bảng/cột, bịa số |
 | U5 | Provider bên thứ ba honest-but-curious | Log hoặc giữ lại prompt theo điều khoản gói trả phí (T16) |
 
@@ -81,7 +83,7 @@ flowchart LR
 | L4 | SQLite authorizer theo role (`security/sqlite.py`): deny mặc định, chỉ `SELECT`/`READ` đúng (bảng, cột) và hàm trong allowlist; chặn `PRAGMA`, `ATTACH`, ghi, DDL | Đọc cột cấm kể cả khi **tắt gate** | Implemented; **không** bảo đảm chế độ chỉ tổng hợp (§8) |
 | L5 | Executor: `mode=ro`, `PRAGMA query_only`, progress handler 3 s, fetch ≤ `max_rows + 1` | Ghi, DoS, cờ `truncated` sai | Implemented |
 | L6 | Cap 100 dòng / 64 KiB / 500 ký tự mỗi trường, sanitizer, cờ `possible_injection`, envelope `trust=untrusted` | Context flooding, ký tự ẩn; đánh dấu payload (heuristic, không phải lớp chặn) | Implemented; cờ hiện ở web (`/api/query`, thẻ cảnh báo) |
-| L6b | System prompt theo policy + bọc câu hỏi/schema/memory/`previous_sql` trong block `untrusted` có nonce (`security/prompting.py`, dùng trong `agent/planning.py`); `get_schema` chỉ trả cột được phép | Model làm theo instruction trong data, model bị dẫn tới cột ẩn | Implemented. `render_tool_result` (bọc dòng kết quả) có sẵn nhưng chưa nối, vì chưa có bước model đọc dòng kết quả |
+| L6b | System prompt theo policy + bọc câu hỏi/schema/memory/`previous_sql` trong block `untrusted` có nonce (`security/prompting.py`, dùng trong `agent/planning.py`); `get_schema` chỉ trả cột được phép | Model làm theo instruction trong data, model bị dẫn tới cột ẩn | Implemented. `render_tool_result` (bọc dòng kết quả) chưa nối vào controller vì chưa có bước model đọc dòng kết quả; đã dùng cho text content của MCP `query` qua `render_mcp_tool_result` (T22) |
 | L7 | Canary check trên output tool và trên câu trả lời trước khi trả (`_check_output` trong controller) | Rò rỉ khi các lớp trên sai | Implemented. Canary chỉ seed trên bản sao lab |
 | L8 | Ẩn nhóm dưới `min_group_size = 5` cá thể cho role chỉ tổng hợp | Suy ra cá nhân từ số tổng hợp quá mịn | Implemented; k = 5 chưa duyệt |
 | L9 | Audit mỗi quyết định và mỗi lần execute | Truy vết request → gate → DB → answer | Implemented; `run_id` truyền từ web vào `AgentRequest` |
@@ -111,6 +113,7 @@ flowchart LR
 | T19 | Output provider bị thao túng | Output là không tin cậy; gate + authorizer quyết định | Implemented | như T2, T5 |
 | T20 | Injection qua dòng kết quả vào model tóm tắt (E5) | Thiết kế: chỉ model local, không tóm tắt khi `possible_injection`, bọc `render_tool_result`, kiểm số, luôn hiện bảng gốc | **Planned (chưa code).** Hiện không có bề mặt này | workplan §16.3 |
 | T21 | Chế độ naive demo (cố tình không an toàn) bị bật ngoài lab, hoặc bị dùng để giả danh role | Tắt mặc định; cần `SQLGUARD_NAIVE_DEMO=1` và Attack Lab bật với DB là bản sao lab (kiểm marker), không thì app không khởi động; chỉ `admin`; không ghi dòng kết quả vào audit/history. Ở chế độ này dòng kết quả synthetic đi ra Gemini | **Planned** | [`NAIVE_AGENT_DEMO.md`](NAIVE_AGENT_DEMO.md) |
+| T22 | Injection qua dòng kết quả MCP vào LLM của client: tool `query` (`src/sqlguard/mcp/server.py`) trả note do attacker cài (`account.service_note`, `order.note`) cho model bên ngoài SQLGuard; nếu client còn có tool web/fetch thì lethal trifecta (dữ liệu riêng + nội dung không tin cậy + kênh ra ngoài) quay lại **ngoài** SQLGuard. Không phải rò cột: gate + authorizer vẫn lọc cột cấm | Text content = notice tự mô tả + cột/dòng trong block `<<untrusted:db_rows:NONCE>>` có nonce ngẫu nhiên mỗi lần gọi, delimiter giả trong dữ liệu bị defang, NFKC chuẩn hóa fullwidth trước (`render_mcp_tool_result` → `render_tool_result` / `wrap_untrusted`); cờ `possible_injection` hiện ngoài block; `structured_content` giữ nguyên envelope (`trust`, `possible_injection`). Tài liệu yêu cầu client **không** ghép server với tool gửi dữ liệu ra ngoài (README, mục MCP) | **Implemented (giảm thiểu, 06/11/2026).** Còn mở: fence chỉ là **advisory** với model của client, không ép được; SQLGuard không kiểm soát được tool khác của client; `structured_content` không có fence | `tests/unit/test_mcp_server.py`, `test_mcp_stdio.py::test_query_text_content_fences_rows_over_stdio` |
 
 ## 6. Policy matrix (`business_financial_v1`)
 
@@ -196,6 +199,10 @@ PostgreSQL, không còn là đường demo.
 - **PII trong câu hỏi đi ra provider** (T15) cho tới khi có E2; test T17 chưa viết.
 - **Attack Lab:** revision note chưa ghi vào trace của run (L8, cần Học); Observe chưa hiện revision.
 - **Parser differential:** chưa có fuzz/differential test SQLGlot ↔ SQLite.
+- **MCP (T22):** fence trong text content chỉ giảm xác suất model của client làm theo note; model
+  vẫn có thể làm theo. Lớp thật sự chặn exfiltration là **không ghép** server với tool gửi dữ liệu ra
+  ngoài, và đó là cấu hình phía client, ngoài tầm kiểm soát của SQLGuard. Client nào đưa
+  `structured_content` thô vào model thì không có fence. Chưa đo ASR với model client thật.
 
 ## 9. Chạy lại bằng chứng
 

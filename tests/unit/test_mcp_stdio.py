@@ -164,3 +164,22 @@ def test_session_closed_after_exit_and_process_gone(db):
             ["pgrep", "-f", "-P", str(os.getpid()), "sqlguard.mcp.server"], capture_output=True
         )
         assert children.returncode == 1
+
+
+def test_query_text_content_fences_rows_over_stdio(db):
+    # T22: text content đi qua transport tới LLM của client phải nằm trong block untrusted;
+    # structured_content giữ envelope để client hiện tại (``_unwrap``) parse như trước.
+    async def scenario():
+        async with connect(db) as connection:
+            return await connection.session.call_tool(
+                "query", {"sql": "SELECT order_id, note FROM orders ORDER BY order_id LIMIT 2"}
+            )
+
+    result = run(scenario())
+    [content] = result.content
+    header, fenced = content.text.split("<<untrusted:db_rows:", 1)
+    assert "trust=untrusted" in header and '"note"' not in header
+    assert '"rows": [[1, "a"], [2, "b"]]' in fenced
+    assert content.text.rstrip().endswith(">>") and content.text.count("<</untrusted:") == 1
+    assert result.structured_content["trust"] == "untrusted"
+    assert result.structured_content["rows"] == [[1, "a"], [2, "b"]]

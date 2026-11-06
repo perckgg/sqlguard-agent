@@ -6,6 +6,10 @@ Khởi chạy bằng ``python -m sqlguard.mcp.server``. Role và đường dẫn
 quyền từ LLM. Mọi câu lệnh đều đi qua runtime bảo mật dùng chung, bao gồm Security Gate,
 ``SQLiteExecutor``, giới hạn số dòng/kích thước kết quả, bộ lọc dữ liệu, kiểm tra canary
 và ghi audit. Nếu cấu hình không hợp lệ, máy chủ dừng thay vì chuyển sang chế độ kém an toàn.
+
+Text content của ``query`` bọc dòng kết quả trong block untrusted có nonce
+(``render_mcp_tool_result``, T22); ``structured_content`` giữ nguyên envelope. Không ghép
+server này với công cụ có thể gửi dữ liệu ra ngoài (web/fetch/email) ở cùng client.
 """
 
 from __future__ import annotations
@@ -30,6 +34,7 @@ from sqlguard.agent.runtime import (
 )
 from sqlguard.agent.sqlite_schema import SQLiteSchemaAdapter
 from sqlguard.mcp.tools import ToolError
+from sqlguard.security.prompting import render_mcp_tool_result
 from sqlguard.security.service import SecurityToolError
 
 ROLE_ENV = "SQLGUARD_MCP_ROLE"
@@ -79,8 +84,11 @@ def _create_server(factory: QueryRuntimeFactory, env: Mapping[str, str]) -> MCPS
             return _error("db_timeout", True)
         except Exception:
             return _error("tool_exception", False)
+        # T22: text content đi thẳng vào LLM của client MCP, nên dòng kết quả (có thể chứa
+        # note do attacker cài) chỉ nằm trong block untrusted có nonce. Envelope đầy đủ
+        # (trust, possible_injection, executed_sql...) vẫn nằm nguyên trong structured_content.
         return CallToolResult(
-            content=[TextContent(type="text", text=json.dumps(envelope, ensure_ascii=False))],
+            content=[TextContent(type="text", text=render_mcp_tool_result(envelope))],
             structured_content=envelope,
         )
 

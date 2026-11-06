@@ -83,6 +83,9 @@ def _unwrap(result: Any) -> Any:
         raise ToolError("MCP tool reported an error", category=category, retryable=retryable)
     if structured is not None:
         return structured
+    # Fallback cho server không trả structured_content. Text của ``query`` trong
+    # ``sqlguard.mcp.server`` không phải JSON mà là block untrusted có nonce (T22), nên chỉ
+    # trả nguyên chuỗi, không parse.
     texts = [
         item.text
         for item in content

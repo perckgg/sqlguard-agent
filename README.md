@@ -150,6 +150,12 @@ python -m sqlguard.demo --question "List order IDs and total amounts"
 
 MCP requires `SQLGUARD_QUERY_SOURCE=sqlite`, a configured trusted role, an existing `SQLGUARD_SQLITE_PATH`, and the `mcp` extra. The server receives the same SQLite path, role, and selected policy; its query tool still applies the policy gate and SQLite authorizer. Leave `SQLGUARD_MCP_ENABLED` unset (or set it to `false`) to use direct SQLite execution.
 
+**Using the server from another MCP client (threat T22).** The `query` tool returns the full `SecureSqlTool` envelope in `structured_content` (`trust: "untrusted"`, `possible_injection`, `executed_sql`, …). Its text content, which most clients hand to their LLM, is not raw JSON: it is a short notice plus the rows inside a nonce-delimited `<<untrusted:db_rows:…>>` block (`render_mcp_tool_result` in `src/sqlguard/security/prompting.py`). Rows can contain attacker-written free text (`account.service_note`, `order.note`; see the Attack Lab), so:
+
+- **Do not pair this server with tools that can send data out** (web fetch/browse, HTTP, email, chat, file upload, another MCP server with network access) in the same client session. SQLGuard filters forbidden columns, but it cannot stop a client model that follows an injected note from exfiltrating permitted rows through such a tool.
+- Give the model the text content, not `structured_content` re-serialized: the structured rows are not fenced.
+- The fence is advisory. It tells the client model the rows are data; it does not force the model to obey. The control that actually holds is the tool combination above.
+
 Focused tests (no database needed): `python -m pytest -q tests/unit/test_agent_runtime_query.py tests/security/test_controller_security.py`.
 
 ## Run the web app
