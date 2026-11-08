@@ -189,7 +189,10 @@ PostgreSQL, không còn là đường demo.
 - **Indirect injection chưa đo trên model thật:** chưa có đường nào đưa dòng kết quả vào model. Nếu
   làm E5 theo thiết kế §16.3 (không tóm tắt khi có `possible_injection`), số đo được sẽ phản ánh
   recall của detector chứ không phải độ bền của model; cần cấu hình eval riêng (workplan §17).
-- **Detector là regex:** payload D2-I04 không bật cờ `possible_injection`. Trên payload chuẩn của demo
+- **Detector là regex:** trên 4 payload D2, rule nhận dạng câu ra lệnh chỉ bắt D2-I01; D2-I02..I04 bị
+  gắn cờ chỉ vì chứa tên cột cấm (với D2-I04 là trùng hợp: `amount` trùng `loan.amount`). Viết lại
+  D2-I04 bằng "số tiền" thì không bị gắn cờ (kiểm lại 08/11; trước đây tài liệu ghi nhầm là D2-I04
+  không bật cờ). Trên payload chuẩn của demo
   (`src/sqlguard/lab/scenarios.py`, role `operator`): N-I1 bị gắn cờ vì nêu tên tool và tên cột; N-I2
   (sửa số tiền) và N-I3 (exfiltration qua ảnh) viết như ghi chú nghiệp vụ nên **lọt**
   (`test_naive_scenarios.py`). Phòng thủ của SQLGuard không dựa vào detector.
