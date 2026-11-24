@@ -32,3 +32,21 @@ CLAUDE.md
 .codegraph/
 # Experiment outputs (runner artifacts are regenerated, not committed)
 artifacts/
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.out
+*.run.xml
+*.synctex*
+*.toc
+*.xdv
+report/main.pdf
+!report/figures/*.pdf
+

@@ -1,0 +1,6 @@
+\section{Đạo đức và Sử dụng có trách nhiệm}
+\label{sec:ethics}
+
+\noindent \textbf{Nguồn gốc dữ liệu và Bảo vệ quyền riêng tư.} Cơ sở dữ liệu thử nghiệm được xây dựng dựa trên bộ dữ liệu chuẩn công khai BIRD Mini-Dev (giấy phép CC BY-SA 4.0, ghi nhận tại tệp \texttt{NOTICE}); toàn bộ các trường định danh cá nhân mới bổ sung (\texttt{client.id\_number}, \texttt{full\_name}, \texttt{address}, \texttt{card.placeholder}, các cột ghi chú) đều là dữ liệu tổng hợp (\textit{synthetic}), không chứa bất kỳ thông tin cá nhân thật hay số thẻ thật nào. Ở luồng hoạt động của SQLGuard, toàn bộ dòng kết quả truy vấn từ CSDL không bao giờ được gửi ra nhà cung cấp LLM bên ngoài.
+
+\noindent \textbf{Kiểm thử tấn công an toàn và Minh bạch hạn chế.} Toàn bộ tính năng tiêm nhiễm của \textit{Attack Lab} mặc định bị tắt, chỉ thao tác trên bản sao DB lab dùng một lần (xác minh sidecar nguồn), và máy chủ listener phục vụ kịch bản exfiltration (\texttt{N-I3}) chỉ lắng nghe trên địa chỉ cục bộ \texttt{127.0.0.1:9999}. Mô hình \texttt{NaiveAgent} được cô lập hoàn toàn trong \texttt{src/sqlguard/lab/} (có unit test cấm runtime chính import chéo) chỉ nhằm minh họa rủi ro nghiên cứu. Khi hệ thống lược bỏ cột cấm (\textit{Partial Answer}) hoặc từ chối truy vấn, SQLGuard luôn gắn thông báo minh bạch để người dùng nghiệp vụ không hiểu nhầm kết quả bị thiếu là toàn bộ sự thật tài chính.

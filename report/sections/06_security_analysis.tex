@@ -1,0 +1,30 @@
+\section{Phân tích An ninh và An toàn}
+\label{sec:security}
+
+\noindent \textbf{Threat Model (\texttt{R6}).} Tài sản cần bảo vệ gồm các cột nhạy cảm theo vai trò (\texttt{client.id\_number}, \texttt{client.address}, \texttt{card.placeholder}, bảng \texttt{loan}), tính toàn vẹn của kết quả số học, API key, nhật ký kiểm toán và ngân sách thời gian. Bề mặt xâm nhập gồm: câu hỏi người dùng (direct injection, giả mạo role, SQL thủ công), các cột văn bản tự do trong DB (\texttt{account.service\_note}, \texttt{order.note} --- indirect injection), đầu ra LLM và kênh gọi API ngoài (\texttt{B2-ext}). Ta giả định kẻ tấn công không sửa được system prompt và không có quyền OS đọc trực tiếp tệp SQLite. Bảng~\ref{tab:threat-controls} và Bảng~\ref{tab:permission-matrix} tóm tắt các lớp phòng thủ đa tầng.
+
+\begin{table}[htbp]
+\centering
+\caption{Tổng hợp mối đe dọa và cơ chế kiểm soát chiều sâu}
+\label{tab:threat-controls}
+\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{0.23\linewidth}|>{\raggedright\arraybackslash}p{0.71\linewidth}|}
+\hline
+\rowcolor{tableheader}
+\textbf{Mối đe dọa} & \textbf{Biện pháp kiểm soát} \\ \hline
+DDL/DML, khóa & \texttt{PolicySQLGate} chặn node ghi; kết nối mở \texttt{mode=ro + query\_only}; \texttt{SQLiteAuthorizer} từ chối ghi/DDL. \\ \hline
+Đọc / dò cột cấm & Phân giải AST ở mọi mệnh đề (\texttt{SELECT}, \texttt{WHERE}, \texttt{ORDER BY}); tái tạo \texttt{normalized\_sql}; Authorizer chặn độc lập ở DB. \\ \hline
+Leo thang đặc quyền & Role khóa chặt từ phiên backend; tool MCP không nhận tham số \texttt{role}. \\ \hline
+DoS / Rò rỉ nhóm nhỏ & Timeout 3s, \texttt{LIMIT = max\_rows+1}, AST $\le 400$ node, $\le 4$ \texttt{JOIN}; role \texttt{analyst} ẩn nhóm $k < 5$. \\ \hline
+Indirect Injection & Kết quả DB bọc nhãn \textit{untrusted}, kiểm canary, không truyền ngược lại cho Planner trong luồng SQLGuard. \\ \hline
+\end{tabular}
+\end{table}
+
+\input{tables/permission_matrix}
+
+\noindent \textbf{Kiểm thử Prompt Injection ($\ge 10$ ca Direct \& Indirect) và Đối chứng \texttt{NaiveAgent}.} Hệ thống được kiểm thử trên hai mức (Bảng~\ref{tab:injection-comparison}): (1) \textit{Mức thực thi cực hạn (offline)}: giả lập Planner bị chiếm hoàn toàn sinh 30 câu SQL tấn công cho \texttt{D2-I01..I04} trên policy Financial $\rightarrow$ 24 bị chặn, 3 trả \textit{partial} (gỡ cột cấm), 2 đọc note như dữ liệu bình thường, 1 giả mạo biểu thức số học (\texttt{F10}), \textbf{0 lần đọc/lộ cột cấm, 0 canary, 0 ghi}; và (2) \textit{Chạy thực tế trên Gemini} gồm $\ge 10$ ca Direct và Indirect (tiêm payload vào \texttt{account.service\_note} và \texttt{order.note} qua \textit{Attack Lab}), đối chiếu trực tiếp với \texttt{NaiveAgent} (\texttt{N9}) để chứng minh cùng mô hình Gemini dễ bị đánh lừa khi thiếu ranh giới AST/DB nhưng bất lực trước SQLGuard.
+
+\input{tables/injection_comparison}
+
+\noindent \textbf{Các phát hiện đã khắc phục (\textit{Findings Acted On}).} Quá trình audit và kiểm thử đã phát hiện và sửa 5 lỗ hổng thực tế kèm test hồi quy: (i) Gate sinh câu lệnh dialect PostgreSQL (\texttt{SUBSTRING ... FROM}) không chạy được trên SQLite $\rightarrow$ đồng bộ dialect sinh từ policy; (ii) Gate nội bộ từ chối làm run kết thúc \texttt{FAILED} thay vì \texttt{REFUSED} làm sai lệch mẫu số UAR $\rightarrow$ chuẩn hóa trạng thái từ chối; (iii) LLM lách truy vấn tổng hợp của \texttt{analyst} bằng nhóm chi tiết 1 cá thể $\rightarrow$ bổ sung ẩn nhóm $k < 5$; (iv) cờ \texttt{truncated} sai do cắt sớm \texttt{LIMIT} $\rightarrow$ ép \texttt{LIMIT = max\_rows + 1}; và (v) mô hình tự trả \texttt{SELECT 1} hoặc đếm bảng khác khi bị cấm bảng $\rightarrow$ chặn \texttt{constant\_projection} và thêm kiểm tra độ phủ câu hỏi. Các rủi ro tồn đọng (như biểu thức \texttt{F10} và câu hỏi thô qua API) được phân tích tại Mục~\ref{sec:limitations}.

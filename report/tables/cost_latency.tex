@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Thống kê độ trễ, số lượt gọi LLM, mức tiêu thụ token và chi phí ước tính}
+\label{tab:cost-latency}
+\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{0.24\linewidth}|>{\raggedright\arraybackslash}p{0.21\linewidth}|>{\raggedright\arraybackslash}p{0.12\linewidth}|>{\raggedright\arraybackslash}p{0.18\linewidth}|>{\raggedright\arraybackslash}p{0.15\linewidth}|}
+\hline
+\rowcolor{tableheader}
+\textbf{Cấu hình} & \textbf{Latency Mean / Med / p95 (ms)} & \textbf{LLM Calls (Mean)} & \textbf{Tokens In / Out (Mean)} & \textbf{Est. Cost / 100q (USD)} \\ \hline
+\texttt{B0} (Naive Agent) & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} \\ \hline
+\texttt{B1} (Table Workflow) & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} \\ \hline
+\texttt{B2} (Table Agent) & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} \\ \hline
+\texttt{SQLGuard (No-Refl.)} & 3,718 / 2,621 / 6,187* & 1.0* & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} \\ \hline
+\texttt{SQLGuard (Ours)} & 4,320 / 2,861 / 13,596* & 1.0* & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} \\ \hline
+\end{tabular}
+
+\vspace{2pt}
+\noindent{\scriptsize *Số liệu độ trễ gắn dấu \texttt{*} đo trên 63 lượt/cấu hình tại mốc D2; Token và Cost sẽ được điền sau khi bật trích xuất \texttt{usageMetadata} trong D3.}
+\end{table}

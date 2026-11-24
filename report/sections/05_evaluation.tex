@@ -1,0 +1,24 @@
+\section{Đánh giá thực nghiệm}
+\label{sec:evaluation}
+
+\noindent \textbf{Thiết lập thực nghiệm và Tập tác vụ (\texttt{R5}).} Hệ thống đánh giá tự động chạy trên bản chụp cố định \texttt{db/financial.sqlite} (SHA-256: \texttt{ec45f11d...}) với planner mặc định \texttt{gemini-2.5-flash}, policy \texttt{business\_financial\_v1} và lặp 3 lượt theo seed (\texttt{42, 123, 2026}), tách biệt hoàn toàn dữ liệu đối chiếu (Gold SQL) khỏi ngữ cảnh mô hình (Hình~\ref{fig:evaluation}). Bộ tác vụ chuẩn gồm 23 tác vụ lõi từ D2 (10 Legitimate, 3 Authorization, 2 Mixed, 4 Injection, 2 Failure, 2 Clean) và được mở rộng lên \texttt{[ĐIỀN D3]} tác vụ cho D3 (bảo đảm $\ge 20$ tác vụ và $\ge 10$ kịch bản tấn công). Các chỉ số gồm: \textbf{LSR} (tỷ lệ truy vấn hợp lệ thành công), \textbf{Auth/Mixed} (từ chối đúng hoặc trả một phần kèm thông báo), \textbf{UAR} (tỷ lệ đọc/lộ tài nguyên cấm, mục tiêu 0\%), \textbf{ASR} (tỷ lệ tấn công thành công), độ trễ và token/chi phí.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.72\linewidth]{figures/evaluation.png}
+    \caption{Quy trình thực thi và chấm điểm tách biệt oracle của Evaluation Harness}
+    \label{fig:evaluation}
+\end{figure}
+
+\noindent \textbf{Đối sánh Baselines (\texttt{B0}--\texttt{B2}) và Nghiên cứu cắt giảm (Ablation).} Để định lượng giá trị từng thành phần, hệ thống so sánh: \texttt{B0} (\textit{Naive Agent}, \texttt{gate\_mode=off}, LLM đọc dòng kết quả qua function calling); \texttt{B1} (\textit{Table Workflow}, \texttt{gate\_mode=table\_level}, 1 attempt); \texttt{B2} (\textit{Table Agent}, \texttt{table\_level}, 3 attempts); \texttt{SQLGuard (No-Refl.)} (Column Gate + Authorizer, 1 attempt); và \texttt{SQLGuard (Ours)} (Column Gate + Authorizer + Reflection, 3 attempts). Bảng~\ref{tab:main-comparison} và Bảng~\ref{tab:benchmark-summary} tổng hợp kết quả hiện có (tại mốc D2: 126/138 lượt hợp lệ đạt \textbf{LSR = 100.0\%}, Clean = \textbf{100.0\%} và \textbf{UAR = 0/69}; 12 lượt \texttt{F01}/\texttt{F02} ở trạng thái \texttt{not\_run} do thiếu \texttt{fault\_hook}).
+
+\input{tables/main_comparison}
+\input{tables/benchmark_summary}
+
+\noindent Ở thí nghiệm cắt giảm, D2 chưa tách biệt được đóng góp của Reflection vì thiếu \texttt{fault\_hook} (\texttt{planner\_calls\_mean = 1.0} ở cả hai cấu hình). Khi kích hoạt \texttt{CAP\_FAULT\_HOOK} trong D3, \texttt{SQLGuard (Ours)} đạt tỷ lệ phục hồi \texttt{F01} là \texttt{[ĐIỀN D3]} so với \texttt{[ĐIỀN D3]} của cấu hình 1-attempt; đồng thời so sánh \texttt{column\_level} với \texttt{table\_level} (\texttt{B1}/\texttt{B2}) cho thấy kiểm soát mức bảng làm \texttt{UAR = [ĐIỀN D3]} hoặc thất bại ở nhóm câu hỏi hỗn hợp.
+
+\noindent \textbf{Độ trễ, Chi phí thực tế (\S 8) và Giới hạn vận hành (\texttt{AT3}).} Bảng~\ref{tab:cost-latency} trình bày độ trễ, lượt gọi LLM và chi phí token. Tổng chi phí API thực chi cho toàn bộ đợt đánh giá D3 là \texttt{[ĐIỀN D3] USD} (chi tiết tại Phụ lục~\ref{app:repro}). Về \textbf{Operational Envelope (\texttt{AT3})}: hệ thống vận hành ổn định trong giới hạn đọc tối đa \textbf{100 dòng / 64 KiB} mỗi truy vấn, timeout \textbf{3 giây/SQL} trên một tệp SQLite cục bộ (hỗ trợ tối đa $\le 4$ phép \texttt{JOIN} và AST $\le 400$ node để tránh quá tải phân giải), kích thước ngữ cảnh lược đồ tuyến tính theo số bảng/cột được phép, và thông lượng đầu cuối bị giới hạn bởi độ trễ gọi API Gemini ($\sim 2.6$--$4.3\text{s}$ trung bình/lượt) cùng hạn mức RPM của khóa API.
+
+\input{tables/cost_latency}
+
+\noindent \textbf{Phân tích nguyên nhân lỗi (Causal Error Analysis).} Tại mốc D2 ghi nhận 22 lượt \texttt{failed} và 17 lượt \texttt{inconclusive} (chi tiết phân nhóm ở Bảng~\ref{tab:eval-errors}, Phụ lục~\ref{app:catalog}), xuất phát từ ba nguyên nhân gốc rễ chứ không phải rò rỉ dữ liệu: (1) \textit{Độ lệch quy ước chấm điểm} --- trong \texttt{A01}, \texttt{I01}, \texttt{I02}, Gate giữ an toàn bằng cách từ chối hoặc trả \texttt{partial} nhưng manifest D2 lại kỳ vọng \texttt{full}/\texttt{refused} cố định; (2) \textit{Tự ý biến đổi cột của LLM} --- trên \texttt{M03}, mô hình tự thêm cột ngoài yêu cầu dẫn tới \texttt{column\_width\_mismatch}; và (3) \textit{Thiếu tín hiệu quan sát} --- \texttt{A04} thiếu metadata kiểm chứng tài nguyên và \texttt{I03}/\texttt{I04} chưa cho LLM đọc kết quả DB. Các nguyên nhân (1) và (3) đã được chuẩn hóa lại cho batch D3.

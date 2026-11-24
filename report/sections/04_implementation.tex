@@ -1,0 +1,18 @@
+\section{Hiện thực, Độ bền vững và Hành động có kiểm soát}
+\label{sec:implementation}
+
+\noindent \textbf{Phân tách Thư viện nền và Phần tự hiện thực (\S 8).} Hệ thống được viết thuần Python 3.11 không phụ thuộc framework agent hộp đen. Các thư viện bên ngoài chỉ đảm nhiệm hạ tầng chuẩn: \texttt{sqlglot} (26.16.4) phân tích cú pháp SQL thành cây AST; \texttt{mcp} (2.3.0) cung cấp lớp truyền tải chuẩn \texttt{stdio}; \texttt{fastapi}/\texttt{uvicorn} phục vụ giao diện web; và \texttt{sqlite3} thực thi truy vấn. Toàn bộ logic cốt lõi đều do nhóm tự xây dựng: bộ điều phối \texttt{AgentController}, trình phân giải quyền và viết lại AST \texttt{PolicySQLGate}, bộ lọc độ phủ câu hỏi--truy vấn, công cụ \texttt{SecureSqlTool}, chốt chặn \texttt{SQLiteAuthorizer}, môi trường \textit{Attack Lab} và hệ thống \textit{Naive Agent} đối chứng.
+
+\noindent \textbf{Độ bền vững và Xử lý sự cố (\texttt{AT2}).} Để đảm bảo hệ thống không treo hoặc rò rỉ ngoại lệ khi gặp sự cố thực tế: (1) Planner (Gemini/Ollama) dùng structured JSON output; phản hồi sai định dạng, timeout hoặc bị bộ lọc an toàn chặn đều ánh xạ sang \texttt{PlannerError}/\texttt{PlannerBlockedError} mà không fallback ngầm về mock; (2) \texttt{SQLiteExecutor} áp dụng \texttt{set\_progress\_handler} ngắt truy vấn quá 3 giây; (3) khi lỗi được đánh dấu \texttt{repairable} (như sai cột hợp lệ trong \texttt{F01}), Agent sửa tối đa trong ngân sách và mọi SQL sửa lại đều qua Gate; khi gặp lỗi kết nối DB (\texttt{F02}), hệ thống thử lại an toàn trong giới hạn trước khi kết thúc với \texttt{failed/error} (mọi công cụ của SQLGuard đều \texttt{read-only} nên retry đảm bảo tính lũy đẳng).
+
+\noindent \textbf{Hành động có kiểm soát và Chuỗi kiểm toán đầu-cuối (\texttt{AT4}).} Mọi thao tác ghi phục vụ diễn tập tiêm nhiễm (\textit{Attack Lab}) chỉ chạy khi bật cấu hình lab, yêu cầu quyền \texttt{admin}, đi qua \texttt{LabRunGuard} (từ chối ghi khi có phiên truy vấn đang chạy), kiểm tra sidecar xác nhận là bản sao DB (cấm chạm DB gốc), thực thi qua \texttt{SQLiteNoteWriter} với authorizer chỉ cho phép \texttt{UPDATE} đúng cột cho phép, khóa lạc quan \texttt{expected\_revision} và có nút khôi phục baseline. Đoạn nhật ký JSONL sau minh họa một chuỗi sự kiện hash-only đầu-cuối cho hành động có kiểm soát (không chứa khóa bí mật hay dữ liệu cá nhân):
+
+% TODO [D3]: Thay bằng bản ghi JSONL trích từ lần chạy demo thực tế trên commit sạch.
+\begin{lstlisting}[caption={Chuỗi Audit Trail hash-only đầu-cuối cho một lượt tiêm và khôi phục Attack Lab (\texttt{AT4})}]
+{"event": "lab_write",    "user": "admin",    "target": "order.29407", "rev": 1, "note_sha256": "<sha256>"}
+{"event": "gate_check",   "role": "operator", "decision": "allow",     "query_hash": "<sha256>", "rows_cap": 101}
+{"event": "tool_exec",    "tool": "query",    "executed": true,        "row_count": 1, "canary_hit": false}
+{"event": "lab_restore",  "user": "admin",    "target": "order.29407", "rev": 2, "restored_baseline": true}
+\end{lstlisting}
+
+\noindent \textbf{Thử nghiệm nhanh với Người dùng tiềm năng (\texttt{AT1}).} Nhóm đã/sẽ thực hiện buổi dùng thử 15--20 phút với \texttt{[ĐIỀN D3: số lượng]} người dùng mục tiêu trên ba kịch bản (truy vấn thường, câu hỏi hỗn hợp có \textit{Partial Answer}, và truy vấn bị từ chối). Ghi nhận phản hồi về tính rõ ràng của thông báo lược bỏ cột và quy tắc \textit{aggregate-only} của \texttt{analyst}: \texttt{[ĐIỀN D3: tóm tắt nhận xét thực tế và điều chỉnh giao diện/notice]}.

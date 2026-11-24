@@ -1,0 +1,45 @@
+\documentclass[10pt,a4paper,table]{article}
+
+% ------------------------------------------------------------------------------
+% Report metadata (switch between D3 v1 and D3 v2 here)
+% ------------------------------------------------------------------------------
+\newcommand{\reportcourse}{CO5151 --- Advanced Agentic Artificial Intelligence (Application Track)}
+\newcommand{\reportstage}{D3 Final Report (v1)}
+\newcommand{\reporttitle}{Security-Aware Text-to-SQL Agent: Fine-Grained Permission Control and Security--Utility Evaluation under Indirect Prompt Injection}
+\newcommand{\reportadvisor}{TS. Lê Xuân Bách}
+\newcommand{\reportfootleft}{CO5151 -- SQLGuard (Application Track)}
+\newcommand{\reportyear}{2026}
+
+\input{preamble}
+
+\begin{document}
+
+% Optional standalone HCMUT cover sheet (keep commented to preserve 6-8p conference budget)
+% \input{sections/00_title}
+% \newpage
+
+% Conference-style inline banner & abstract
+\makereportheader
+\input{sections/00_abstract}
+
+% Official 9 Application-Track sections (CO5151 Table 6) — target 6-8 pages
+\input{sections/01_introduction}
+\input{sections/02_background}
+\input{sections/03_system_design}
+\input{sections/04_implementation}
+\input{sections/05_evaluation}
+\input{sections/06_security_analysis}
+\input{sections/07_limitations_validity}
+\input{sections/08_ethics}
+\input{sections/09_conclusion}
+
+% References
+\bibliographystyle{ieeetr}
+\bibliography{references}
+
+% Appendices A-D (Reproducibility & Spend, Contribution Statement, AI-Use Statement, Tasks/Attacks)
+\newpage
+\appendix
+\input{sections/99_appendix}
+
+\end{document}

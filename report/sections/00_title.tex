@@ -1,0 +1,51 @@
+\begin{titlepage}
+\begin{tikzpicture}[remember picture, overlay]
+    \draw[line width = 4pt] ($(current page.north west) + (2cm,-2cm)$) rectangle ($(current page.south east) + (-1.5cm,2cm)$);
+\end{tikzpicture}
+
+\begin{center}
+    {\fontsize{15pt}{15pt}\selectfont \textbf{ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH}} \\
+    {\fontsize{15pt}{15pt}\selectfont \textbf{TRƯỜNG ĐẠI HỌC BÁCH KHOA}} \\
+    {\fontsize{15pt}{15pt}\selectfont \textbf{KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH}}
+\end{center}
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=4cm]{figures/hcmut.png}
+\end{figure}
+
+\begin{center}
+    {\fontsize{15pt}{15pt}\selectfont \textbf{\reportcourse}}\\[0.4cm]
+    {\fontsize{17pt}{17pt}\selectfont \textbf{\reportstage}}\\[1.0cm]
+    {\fontsize{15pt}{20pt}\selectfont \textbf{\reporttitle}}
+\end{center}
+
+\vspace{0.6cm}
+
+\begin{center}
+    {\fontsize{13pt}{16pt}\selectfont \textbf{Giảng viên:} \reportadvisor}
+
+    \vspace{0.5cm}
+
+    {\fontsize{10.5pt}{13pt}\selectfont
+    \begin{tabular}{|c|c|l|p{6.8cm}|}
+        \hline
+        \rowcolor{tableheader}
+        \textbf{No.} & \textbf{MSHV} & \textbf{Họ và tên} & \textbf{Technical ownership} \\
+        \hline
+        1 & 2570426 & Trần Thái Học & \textbf{Agent Architecture \& Runtime:} \par Controller, MCP/Memory, Bounded Reflection, Fault Recovery \& Token/Cost Telemetry \\
+        \hline
+        2 & 2570754 & Nguyễn Văn Hoàng Khang & \textbf{Security \& Threat Modeling:} \par AST Column Gate, SQLite Authorizer, Full Threat Model, 10+ Injection Cases \& Attack Lab / Naive Compare \\
+        \hline
+        3 & 2570436 & Tiêu Trí Kiệt & \textbf{Evaluation \& Reproducibility:} \par 60-Task Benchmark, Baselines B0--B2, Ablation, Cost/Latency Analysis \& One-command Repro \\
+        \hline
+    \end{tabular}
+    }
+\end{center}
+
+\vfill
+
+\begin{center}
+    {\fontsize{15pt}{15pt}\selectfont \textbf{THÀNH PHỐ HỒ CHÍ MINH - \reportyear}}
+\end{center}
+\end{titlepage}

@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Ma trận quyền \texttt{business\_financial\_v1} cho ba vai trò trên schema Financial}
+\label{tab:permission-matrix}
+\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{0.10\linewidth}|>{\raggedright\arraybackslash}p{0.27\linewidth}|>{\raggedright\arraybackslash}p{0.28\linewidth}|>{\raggedright\arraybackslash}p{0.27\linewidth}|}
+\hline
+\rowcolor{tableheader}
+\textbf{Bảng} & \textbf{Operator} & \textbf{Analyst (Aggregate-only)} & \textbf{Credit Officer} \\ \hline
+\texttt{client} & \texttt{client\_id}, \texttt{district\_id}, \texttt{full\_name}, \texttt{address} & \texttt{client\_id} (key), \texttt{gender}, \texttt{district\_id} & \texttt{client\_id}, \texttt{district\_id}, \texttt{full\_name} \\ \hline
+\texttt{account} & 5 cột (gồm \texttt{service\_note}) & 4 cột (trừ \texttt{service\_note}) & 4 cột (trừ \texttt{service\_note}) \\ \hline
+\texttt{card} & Đủ cột (trừ \texttt{placeholder}) & Cấm cả bảng & Cấm cả bảng \\ \hline
+\texttt{disp} & Đủ 4 cột & \texttt{client\_id}, \texttt{account\_id} (key), \texttt{type} & Đủ 4 cột \\ \hline
+\texttt{trans} & Đủ 10 cột & 7 cột (trừ \texttt{balance}, \texttt{bank}, \texttt{account}) & 8 cột (trừ \texttt{bank}, \texttt{account}) \\ \hline
+\texttt{loan} & Cấm cả bảng & Cấm cả bảng & Đủ 7 cột \\ \hline
+\texttt{order} & Đủ 7 cột (gồm \texttt{note}) & Cấm cả bảng & 4 cột (trừ \texttt{bank\_to}, \texttt{account\_to}, \texttt{note}) \\ \hline
+\texttt{district} & \texttt{district\_id}, \texttt{a2}, \texttt{a3} & 8 cột (\texttt{a2}--\texttt{a4}, \texttt{a10}--\texttt{a13}) & 6 cột (\texttt{a2}, \texttt{a3}, \texttt{a11}--\texttt{a13}) \\ \hline
+\end{tabular}
+\end{table}

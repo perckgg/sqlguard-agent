@@ -1,0 +1,186 @@
+% ==============================================================================
+% Preamble for CO5151 Conference-Style Report (6-8 pages, A4, Vietnamese UTF-8)
+% ==============================================================================
+
+% Encoding & Vietnamese support
+\usepackage[utf8]{inputenc}
+\usepackage{vntex}
+\usepackage{indentfirst}
+
+% Compact conference geometry (A4: 210 x 297 mm)
+\usepackage{geometry}
+\geometry{
+    a4paper,
+    left=20mm,
+    right=20mm,
+    top=22mm,
+    bottom=22mm,
+    headheight=22pt
+}
+
+% Math & Theorem environments
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{amsthm}
+
+\newtheorem{theorem}{{\bf Định lý}}
+\newtheorem{property}{{\bf Tính chất}}
+\newtheorem{proposition}{{\bf Mệnh đề}}
+\newtheorem{corollary}[proposition]{{\bf Hệ quả}}
+\newtheorem{lemma}[proposition]{{\bf Bổ đề}}
+\theoremstyle{definition}
+\newtheorem{exer}{Bài toán}
+
+% Tables, colors & compact lists
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{tabularx}
+\usepackage{hhline}
+\usepackage{diagbox}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{enumitem}
+\setlist{nosep, leftmargin=1.6em}
+\setlist[itemize]{topsep=2pt, partopsep=0pt}
+\setlist[enumerate]{topsep=2pt, partopsep=0pt}
+
+\definecolor{tableheader}{HTML}{E6ECF5}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+% Graphics, floats & TikZ diagrams
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{float}
+\usepackage{placeins}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{pdfpages}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows,arrows.meta,shapes.geometric,backgrounds,calc}
+
+% Code listings, callout boxes & algorithms
+\usepackage{listings}
+\lstdefinestyle{stylist}{
+    aboveskip=2mm,
+    belowskip=2mm,
+    columns=flexible,
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\scriptsize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=4pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    alsoletter={.,_}
+}
+\lstset{style=stylist}
+
+\usepackage{tcolorbox}
+\usepackage[lined,boxed,commentsnumbered]{algorithm2e}
+
+% Headings & compact conference section spacing
+\usepackage{titlesec}
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection.}{0.6em}{}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\normalfont\small\bfseries}{\thesubsubsection}{0.6em}{}
+
+\titlespacing*{\section}{0pt}{1.8ex plus 0.5ex minus 0.2ex}{0.8ex}
+\titlespacing*{\subsection}{0pt}{1.3ex plus 0.3ex minus 0.2ex}{0.5ex}
+\titlespacing*{\subsubsection}{0pt}{1.0ex plus 0.2ex minus 0.1ex}{0.3ex}
+
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+
+% Running headers, footers & utilities
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{setspace}
+\usepackage[normalem]{ulem}
+\usepackage[bottom]{footmisc}
+\usepackage{cite}
+
+% Hyperlinks & URL wrapping (loaded last)
+\usepackage{hyperref}
+\usepackage{xurl}
+\hypersetup{
+    colorlinks=true,
+    urlcolor=blue,
+    linkcolor=black,
+    citecolor=black
+}
+
+% Default metadata (overridden in main.tex)
+\providecommand{\reportcourse}{CO5151 --- Advanced Agentic Artificial Intelligence (Application Track)}
+\providecommand{\reportstage}{D3 Final Report (v1)}
+\providecommand{\reporttitle}{Security-Aware Text-to-SQL Agent: Fine-Grained Permission Control and Security--Utility Evaluation under Indirect Prompt Injection}
+\providecommand{\reportadvisor}{TS. Lê Xuân Bách}
+\providecommand{\reportfootleft}{CO5151 -- SQLGuard (Application Track)}
+\providecommand{\reportyear}{2026}
+
+% Inline Conference-Style Title Banner on Page 1
+\newcommand{\makereportheader}{%
+    \thispagestyle{plain}%
+    \noindent
+    \begin{minipage}[c]{13mm}
+        \includegraphics[width=11mm]{figures/hcmut.png}
+    \end{minipage}%
+    \begin{minipage}[c]{\dimexpr\textwidth-13mm\relax}
+        {\small\bfseries \reportcourse}\\[1pt]
+        {\footnotesize Khoa Khoa học và Kỹ thuật Máy tính, Trường ĐH Bách Khoa -- ĐHQG-HCM \hfill \textbf{\reportstage}}
+    \end{minipage}
+    \vspace{4pt}
+    \hrule height 1.2pt
+    \vspace{7pt}
+    \begin{center}
+        {\Large\bfseries \reporttitle \par}
+        \vspace{5pt}
+        {\normalsize Trần Thái Học (2570426) \quad $\cdot$ \quad Nguyễn Văn Hoàng Khang (2570754) \quad $\cdot$ \quad Tiêu Trí Kiệt (2570436) \par}
+        \vspace{2pt}
+        {\footnotesize Giảng viên hướng dẫn: \reportadvisor \quad $\cdot$ \quad TP. Hồ Chí Minh, \reportyear \par}
+    \end{center}
+    \vspace{4pt}
+    \hrule height 0.6pt
+    \vspace{8pt}
+}
+
+% Running Header & Footer (Pages 2+)
+\pagestyle{fancy}
+\fancyhead{}
+\fancyhead[L]{\scriptsize\ttfamily \reportcourse}
+\fancyhead[R]{\scriptsize\ttfamily \reportstage}
+\fancyfoot{}
+\fancyfoot[L]{\scriptsize\ttfamily \reportfootleft}
+\fancyfoot[R]{\scriptsize\ttfamily Trang {\thepage}/\pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\footrulewidth}{0.3pt}
+
+% Captions, float spacing & Vietnamese labels
+\sloppy
+\captionsetup[figure]{labelfont={footnotesize,bf},textfont={footnotesize,it},skip=4pt}
+\captionsetup[table]{labelfont={footnotesize,bf},textfont={footnotesize,it},skip=4pt}
+
+\renewcommand{\listfigurename}{Danh sách hình}
+\renewcommand{\listtablename}{Danh sách bảng}
+
+\setlength{\floatsep}{6pt plus 2pt minus 2pt}
+\setlength{\textfloatsep}{7pt plus 2pt minus 2pt}
+\setlength{\intextsep}{6pt plus 2pt minus 2pt}

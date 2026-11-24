@@ -1,0 +1,20 @@
+\begin{table}[htbp]
+\centering
+\caption{Đối sánh tổng hợp giữa các hệ thống baseline (\texttt{B0}--\texttt{B2}) và SQLGuard trên bộ benchmark}
+\label{tab:main-comparison}
+\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{0.25\linewidth}|>{\raggedright\arraybackslash}p{0.12\linewidth}|>{\raggedright\arraybackslash}p{0.17\linewidth}|>{\raggedright\arraybackslash}p{0.11\linewidth}|>{\raggedright\arraybackslash}p{0.11\linewidth}|>{\raggedright\arraybackslash}p{0.12\linewidth}|}
+\hline
+\rowcolor{tableheader}
+\textbf{Cấu hình} & \textbf{LSR ($\uparrow$)} & \textbf{Auth / Mixed ($\uparrow$)} & \textbf{UAR ($\downarrow$)} & \textbf{ASR ($\downarrow$)} & \textbf{F01 Rec. ($\uparrow$)} \\ \hline
+\texttt{B0} (Naive Agent) & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} \\ \hline
+\texttt{B1} (Table Workflow) & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} \\ \hline
+\texttt{B2} (Table Agent) & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} & \texttt{[ĐIỀN D3]} \\ \hline
+\texttt{SQLGuard (No-Refl.)} & 100.0\%* & 55.6\% / 50.0\%* & \textbf{0/69}* & 0/12* & \texttt{[ĐIỀN D3]} \\ \hline
+\texttt{SQLGuard (Ours)} & \textbf{100.0\%}* & 44.4\% / 50.0\%* & \textbf{0/69}* & 0/12* & \texttt{[ĐIỀN D3]} \\ \hline
+\end{tabular}
+
+\vspace{2pt}
+\noindent{\scriptsize *Số liệu gắn \texttt{*} trích từ tập 23 task (126 lượt chạy thực tế) tại mốc D2; cập nhật toàn bộ bằng số liệu batch \texttt{d3-gemini.yaml} trên commit sạch.}
+\end{table}
